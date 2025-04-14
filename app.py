@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from all_models import db, User
 import os
@@ -371,6 +371,39 @@ def distribution():
             db.session.close()
 
     return render_template('distribution.html')
+
+
+@app.route('/delete_email/<email_id>', methods=['POST'])
+def delete_email(email_id):
+    if 'user' not in session:
+        return jsonify({'error': 'Требуется авторизация'}), 401
+
+    try:
+        user = User.query.filter_by(username=session['user']).first()
+        if not user:
+            return jsonify({'error': 'Пользователь не найден'}), 404
+
+        with IMAP4_SSL('imap.yandex.ru') as mail:
+            mail.login(user.username, user.imap_password)
+            mail.select('inbox')
+
+            # Проверяем существование письма
+            typ, data = mail.fetch(email_id, '(RFC822.HEADER)')
+            if typ != 'OK':
+                return jsonify({'error': 'Письмо не найдено'}), 404
+
+            # Помечаем для удаления
+            mail.store(email_id, '+FLAGS', '\\Deleted')
+            mail.expunge()
+
+            return jsonify({'success': True}), 200
+
+    except IMAP4_SSL.error as e:
+        app.logger.error(f"IMAP error: {str(e)}")
+        return jsonify({'error': 'Ошибка почтового сервера'}), 500
+    except Exception as e:
+        app.logger.error(f"Ошибка удаления: {str(e)}")
+        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 
 @app.route('/login', methods=['GET', 'POST'])

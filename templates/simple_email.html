@@ -64,7 +64,7 @@
     <div class="email-actions">
         <button class="action-btn reply-btn" onclick="replyEmail()">Ответить</button>
         <button class="action-btn ai-reply-btn" onclick="aiReply()">Ответить с помощью AI</button>
-        <button class="action-btn delete-btn" onclick="deleteEmail()">Удалить письмо</button>
+        <button class="action-btn delete-btn" onclick="return deleteEmail(event)">Удалить письмо</button>
     </div>
 
     <div class="email-header">
@@ -91,27 +91,52 @@
         {% endif %}
     </div>
 
-    <script>
-        function replyEmail() {
-            window.location.href = `/reply_email/{{ email_id }}`;
-        }
+<script>
+    function deleteEmail(event) {
+        event.preventDefault(); // Блокируем действие по умолчанию
 
-        function aiReply() {
-            window.location.href = `/ai_reply/{{ email_id }}`;
-        }
+        if (confirm('Вы уверены, что хотите удалить это письмо? Действие нельзя отменить.')) {
+            const deleteBtn = event.target;
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Удаление...';
 
-        function deleteEmail() {
-            if (confirm('Вы уверены, что хотите удалить это письмо?')) {
-                fetch(`/delete_email/{{ email_id }}`, {
-                    method: 'DELETE',
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/dashboard';
-                    } else {
-                        alert('Ошибка при удалении письма');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ошибка при удалении письма
+            fetch(`/delete_email/{{ email_id }}`, {
+                method: 'POST',
+                {#headers: {#}
+                {#    'Content-Type': 'application/json',#}
+                {#    'X-CSRFToken': '{{ csrf_token() }}'#}
+                {#},#}
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка сервера');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/dashboard?deleted=true';
+                } else {
+                    throw new Error(data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Удалить письмо';
+            });
+        }
+        return false;
+    }
+
+    // Добавим обработчики для других кнопок
+    function replyEmail(event) {
+        event.preventDefault();
+        window.location.href = `/reply_email/{{ email_id }}`;
+    }
+
+    function aiReply(event) {
+        event.preventDefault();
+        window.location.href = `/ai_reply/{{ email_id }}`;
+    }
+</script>
