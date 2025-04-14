@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Текст письма (UID: {{ uuid }})</h4>
+        </div>
+        <div class="card-body">
+            <pre>{{ content }}</pre>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Назад</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

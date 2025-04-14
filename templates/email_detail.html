@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>{{ email.subject }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>От:</strong> {{ email.from }}</p>
+            <p><strong>Дата:</strong> {{ email.date }}</p>
+            <hr>
+            <div class="email-content">
+                <pre>{{ email.raw }}</pre>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Назад</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Добро пожаловать, {{ username }}!</h2>
+    <p>Здесь будет контент страницы распределения.</p>
+
+    <h3>Список писем:</h3>
+    <ul class="list-group">
+        {% for email in emails %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>От:</strong> {{ email.from }}<br>
+                <strong>Тема:</strong> {{ email.subject }}<br>
+                <strong>Дата:</strong> {{ email.date }}
+            </div>
+            <div>
+                <button class="btn btn-primary btn-sm me-2" onclick="openEmail('{{ email.uid }}')">
+                    Открыть
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteEmail('{{ email.uid }}')">
+                    Удалить
+                </button>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+function openEmail(uid) {
+    window.location.href = `/email/${uid}`;
+}
+
+function deleteEmail(uid) {
+    if (confirm('Вы уверены, что хотите удалить это письмо?')) {
+        fetch(`/email/${uid}`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

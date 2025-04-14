@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .password-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .flash.success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .flash.error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="form-container">
+        <h2>Регистрация пользователя</h2>
+        <form id="userForm" action="distribution" method="post">
+            <div class="form-group">
+                <label for="username">Логин пользователя:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+                <p class="password-note">Пароль должен содержать не менее 8 символов</p>
+            </div>
+
+            <div class="form-group">
+                <label for="imap_password">Пароль IMAP:</label>
+                <input type="password" id="imap_password" name="imap_password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Телефон пользователя:</label>
+                <input type="tel" id="phone" name="phone" pattern="[0-9]{11}" required>
+                <p class="password-note">Формат: 79991234567 (11 цифр без пробелов и скобок)</p>
+            </div>
+
+            <button type="submit" class="submit-btn">Зарегистрировать</button>
+        </form>
+    </div>
+
+    <script>
+        // Простая валидация формы перед отправкой
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            const password = document.getElementById('password').value;
+            const imapPassword = document.getElementById('imap_password').value;
+            const phone = document.getElementById('phone').value;
+
+            if (password.length < 8) {
+                alert('Пароль должен содержать не менее 8 символов');
+                event.preventDefault();
+                return;
+            }
+
+            if (!/^\d{11}$/.test(phone)) {
+                alert('Введите корректный номер телефона (11 цифр)');
+                event.preventDefault();
+                return;
+            }
+
+            // Можно добавить дополнительные проверки
+        });
+    </script>
+</body>
+</html>
