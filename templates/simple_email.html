@@ -1,14 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Просмотр письма</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }} - Просмотр письма</title>
+    <style>
+        .email-actions {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .reply-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .ai-reply-btn {
+            background: #2196F3;
+            color: white;
+        }
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+        .email-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .email-meta {
+            color: #666;
+            font-size: 14px;
+        }
+        .email-body {
+            margin-top: 20px;
+        }
+        .email-html-content {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .email-text-content {
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
-    <h1>{{ subject }}</h1>
-    <p><strong>От:</strong> {{ from_email }}</p>
-    <hr>
-    <pre>{{ content }}</pre>
-    <hr>
-    <p>ID письма: {{ email_id }}</p>
-</body>
-</html>
+    <div class="email-actions">
+        <button class="action-btn reply-btn" onclick="replyEmail()">Ответить</button>
+        <button class="action-btn ai-reply-btn" onclick="aiReply()">Ответить с помощью AI</button>
+        <button class="action-btn delete-btn" onclick="deleteEmail()">Удалить письмо</button>
+    </div>
+
+    <div class="email-header">
+        <h1>{{ subject }}</h1>
+        <div class="email-meta">
+            <strong>От:</strong> {{ from_email }}<br>
+            <strong>ID письма:</strong> {{ email_id }}
+        </div>
+    </div>
+
+    <div class="email-body">
+        {% if html_content %}
+            <div class="email-html-content">
+                {{ html_content|safe }}
+            </div>
+            <hr>
+            <div class="email-text-content">
+                {{ content }}
+            </div>
+        {% else %}
+            <div class="email-text-content">
+                {{ content }}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function replyEmail() {
+            window.location.href = `/reply_email/{{ email_id }}`;
+        }
+
+        function aiReply() {
+            window.location.href = `/ai_reply/{{ email_id }}`;
+        }
+
+        function deleteEmail() {
+            if (confirm('Вы уверены, что хотите удалить это письмо?')) {
+                fetch(`/delete_email/{{ email_id }}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('Ошибка при удалении письма');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при удалении письма
