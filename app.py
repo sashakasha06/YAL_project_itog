@@ -31,7 +31,6 @@ with app.app_context():
 
 def get_emails(username, imap_password):
     mail = IMAP4_SSL('imap.yandex.ru')
-    print(username, imap_password)
     mail.login(username, imap_password)
     mail.select('inbox')
 
@@ -43,27 +42,34 @@ def get_emails(username, imap_password):
 
     # Берем только последние 10 писем
     message_ids = messages[0].split()
-    last_10_ids = message_ids[-10:] if len(message_ids) > 10 else message_ids
+    last_10_ids = message_ids[-50:] if len(message_ids) > 50 else message_ids
 
     emails = []
     for num in last_10_ids:
-        status, data = mail.fetch(num, '(RFC822)')
-        status, uid_data = mail.fetch(num, '(UID)')
-        uid = uid_data[0].split()[2].decode('utf-8')
-        print(status, uid)
-        if status == 'OK':
-            try:
-                email_data = data[0][1].decode('utf-8')
-                parsed_email = parse_email(email_data)
-                emails.append(parsed_email)
-            except Exception as e:
-                print(f"Ошибка при обработке письма {num}: {str(e)}")
+        try:
+            # Получаем содержимое письма
+            status, data = mail.fetch(num, '(RFC822)')
+            if status != 'OK':
+                continue
 
-    return emails
+            # Получаем UID письма (без скобок)
+            status, uid_data = mail.fetch(num, '(UID)')
+            if status == 'OK':
+                uid = uid_data[0].split()[2].decode('utf-8').strip(')')
+            else:
+                uid = num.decode('utf-8')  # Используем номер как fallback
 
-    # Обратите внимание на отступ
+            # Парсим письмо
+            email_data = data[0][1].decode('utf-8')
+            parsed_email = parse_email(email_data)
+            parsed_email['uid'] = uid  # Добавляем UID к данным письма
+            emails.append(parsed_email)
+
+        except Exception as e:
+            print(f"Ошибка при обработке письма {num}: {str(e)}")
+
     mail.logout()
-    return []
+    return emails
 
 
 def get_email_text(message):
